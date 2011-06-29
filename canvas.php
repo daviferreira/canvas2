@@ -61,31 +61,86 @@ class canvas{
   }
 
   public function create_empty_image($width, $height){
-  
+    $this->width = $width;
+    $this->height = $height;
+    $this->image = imagecreatetruecolor($this->width, $this->height);
+    $background_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
+    imagefill($this->image, 0, 0, $background_color);
+    $this->extension = 'jpg';
+    return $this;
   }
 
   public function load_url($url){
-  
+    $this->file = $url;
+    $pathinfo = pathinfo($this->file);
+    $this->extension = strtolower($pathinfo['extension']);
+    $image_formats = array(
+      'jpeg' => 2,
+      'jpg' => 2,
+      'gif' => 1,
+      'png' => 3,
+      'bmp' => 6
+    );
+    $this->format = $image_formats[$this->extension];
+    if(!$this->format){
+      $this->error = "Invalid image URL.";
+    }else{
+      $this->create_image();
+      $this->width = imagesx($this->image);
+      $this->height = imagesy($this->image);
+    }
+    return $this;
   }
 
   private function create_image(){
-  
+    switch($this->format){
+      case 1:
+        $this->image = imagecreatefromgif($this->file);
+        $this->extension = 'gif';
+        break;
+      case 2:
+        $this->image = imagecreatefromjpeg($this->file);
+        $this->extension = 'jpg';
+        break;
+      case 3:
+        $this->image = imagecreatefrompng($this->file);
+        $this->extension = 'png';
+        break;
+      case 6:
+        $this->image = imagecreatefrombmp($this->file);
+        $this->extension = 'bmp';
+        break;
+      default:
+        $this->error = "Invalid image file.";
+        break;
+    } 
   }
 
   private function set_rgb($r, $g, $b){
-  
+    $this->rgb = array($r, $g, $b);
+    return $this;
   }
 
   public function convert_hex_to_rgb($hex_color){
-  
+    $hex_color = str_replace( '#', '', $hex_color );
+    if(strlen($hex_color) == 3) 
+      $hex_color .= $hex_color; // #fff, #000 etc.
+    $this->rgb = array(
+      hexdec(substr($hex_color, 0, 2)),
+      hexdec(substr($hex_color, 2, 2)),
+      hexdec(substr($hex_color, 4, 2))
+    );
+    return $this;
   }
 
   public function set_crop_coordinates($x, $y){
-  
+    $this->crop_coordinates = array($x, $y, $this->width, $this->height);
+    return $this;
   }
 
   public function resize($new_width = null, $new_height = null, $method = null){
-  
+    $this->new_width = $new_width;
+    $this->new_height = $new_height;
   }
 
   private function resize_with_no_method(){
