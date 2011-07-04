@@ -106,12 +106,13 @@ class canvas{
     return $this;
   }
 
-  private function set_rgb($r, $g, $b){
-    $this->rgb = array($r, $g, $b);
+  public function set_rgb($rgb){
+    if(is_array($rgb)) $this->rgb = $rgb;
+    else $this->hex_to_rgb($rgb);
     return $this;
   }
 
-  public function convert_hex_to_rgb($hex_color){
+  private function hex_to_rgb($hex_color){
     $hex_color = str_replace( '#', '', $hex_color );
     if(strlen($hex_color) == 3) // #fff, #000 etc. 
       $hex_color .= $hex_color;
@@ -137,33 +138,86 @@ class canvas{
     $this->new_width = $new_width;
     $this->new_height = $new_height;
     
+    $this->calculate_new_dimensions();
     
-    $pos = strpos($this->new_width, '%');
-    if($pos)
-      $this->new_width = round($this->width*(preg_replace('/[^0-9]/', '', $this->new_width))/100)); 
-    $pos = strpos($this->new_height, '%');
-    if($pos)
-      $this->new_height = round($this->height*(preg_replace('/[^0-9]/', '', $this->new_height))/100));
+    if($method) $method = "resize_with_{$method}";
+    
+    if(!method_exists($this, $method))
+      $method = "resize_with_no_method";
+    
+    $this->$method();
+    
+    return $this;
+  }
+  
+  private function calculate_new_dimensions(){
+    $this->check_for_percentages();
+    if(!$this->new_width)
+      $this->new_width = $this->width/($this->height/$this->new_height);
+    elseif(!$this->new_height)
+      $this->new_height = $this->height/($this->width/$this->new_width);
+  }
+  
+  private function check_for_percentages(){
+    if(strpos($this->new_width, '%'))
+      $this->new_width = round($this->width*(preg_replace('/[^0-9]/', '', $this->new_width)/100)); 
+    if(strpos($this->new_height, '%'))
+      $this->new_height = round($this->height*(preg_replace('/[^0-9]/', '', $this->new_height)/100));
   }
 
   private function resize_with_no_method(){
-  
+    $this->temp_image = imagecreatetruecolor($this->new_width, $this->new_height);
+    imagecopyresampled($this->temp_image, $this->image, 0, 0, 0, 0, 
+                       $this->new_width, $this->new_height, $this->width, $this->height);
+    $this->image = $this->temp_image;
   }
 
-  private function fill_image(){
-  
+  private function fill(){
+    imagefill($this->temp_image, 0, 0, 
+              imagecolorallocate($this->temp_image, $this->rgb[0], $this->rgb[1], $this->rgb[2]));
   }
 
   private function resize_with_fill(){
-  
-  }
+    $this->temp_image = imagecreatetruecolor($this->new_width, $this->new_height);
+    $this->fill();
 
-  private function calculate_crop_coordinates(){
-  
+    // centers image into the filled image area
+    // by width
+    if(($this->width/$this->height) >= ($this->new_width/$this->new_height)){
+        $dif_w = $this->new_width;
+        $dif_h = $this->height*($this->new_width/$this->width);
+        $dif_x = 0;
+        $dif_y = round(($this->new_height-$dif_h)/2);
+    // by height
+    }else{
+        $dif_w = $this->width*($this->new_height/$this->height);
+        $dif_h = $this->new_height;
+        $dif_x = round(($this->new_width-$dif_w)/2);
+        $dif_y = 0;
+    }
+    
+    imagecopyresampled($this->temp_image, $this->image, $dif_x, $dif_y, 0, 0, $dif_w, $dif_h, $this->width, $this->height);
+    $this->image = $this->temp_image;
   }
 
   private function resize_with_crop(){
-  
+    if(!is_array($this->crop_coordinates))
+      $this->crop_coordinates = array(0, 0, $this->width, $this->height);
+      
+    $this->temp_image = imagecreatetruecolor($this->new_width, $this->new_height);
+
+    $this->fill();
+
+    imagecopyresampled($this->temp_image, 
+                       $this->image, 
+                       $this->crop_coordinates[0], 
+                       $this->crop_coordinates[1], 
+                       0, 0, $this->crop_coordinates[2], 
+                       $this->crop_coordinates[3], 
+                       $this->width, 
+                       $this->height);
+
+    $this->image = $this->temp_image;
   }
 
   public function flip($orientation = 'h'){

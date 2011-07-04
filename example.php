@@ -7,6 +7,8 @@ include 'canvas.php';
 $file ="../funfou_teaser/logo.jpg";
 
 $canvas = new canvas($file);
+
+$canvas->set_rgb('#df0d32')->resize("90%", "30%", 'fill');
 #var_dump($canvas->error_message());
 $canvas->show();
 
