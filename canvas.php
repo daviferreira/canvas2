@@ -220,20 +220,20 @@ class canvas{
     $h = imagesy($this->image);
 
     $this->temp_image = imagecreatetruecolor($w, $h);
-
-    switch($orientation){
-      case 'horizontal':
-        for($x = 0; $x < $w; $x++)
-          imagecopy($this->temp_image, $this->image, $x, 0, $w - $x - 1, 0, 1, $h);
-        break;
-      case 'vertical':
-        for($y = 0; $y < $h; $y++)
-          imagecopy($this->temp_image, $this->image, 0, $y, 0, ($h - $y - 1), $w, 1);
-        break;
-    }
+    $this->flip_$orientation($w, $h);
 
     $this->image = $this->temp_image;
     return $this;
+  }
+  
+  private function flip_horizontal($w, $h){
+    for($x = 0; $x < $w; $x++)
+      imagecopy($this->temp_image, $this->image, $x, 0, $w - $x - 1, 0, 1, $h);
+  }
+  
+  private function flip_vertical($w, $h){
+    for($y = 0; $y < $h; $y++)
+      imagecopy($this->temp_image, $this->image, 0, $y, 0, ($h - $y - 1), $w, 1);
   }
 
   public function rotate($degrees){
@@ -250,48 +250,55 @@ class canvas{
     return $this; 
   }
 
-  public function add_text_to_image($text, $options = array()){
+  public function add_text($text, $options = array()){
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
 
-    $truetype = (isset($options['truetype']) && $options['truetype']);
-
-    if($truetype === true){
-      $text_dimensions = imagettfbbox($options['size'], 0, $options['font'], $text);
-      $text_width = $text_dimensions[4];
-      $text_height = $options['size'];
-    }else{
-      if($options['size'] > 5) $size = 5;
-      $text_width = imagefontwidth($options['size']*strlen($text));
-      $text_height = imagefontheight($options['size']);
-    }
+    $dimensions = $this->text_dimensions(strlen($text), $options);
 
     if(is_string($options['x'] && is_string($options['y'])))
-      list($options['x'], $options['y']) = $this->calculate_text_position($options['x'], $options['y'], $text_width, $text_height);
+      list($options['x'], $options['y']) = $this->calculate_text_position($options['x'], $options['y'], $dimensions['width'], $dimensions['height']);
 
-    if($options['background_color']){
-      if(is_array($options['background_color']))
-        $this->rgb = $options['background_color'];
-      elseif(strlen($options['background_color'] > 3))
-        $this->hex_to_rgb($options['background_color']);
+    if($options['background_color'])
+      $this->text_background_color($dimensions, $options)
 
-      $this>temp_image = imagecreatetruecolor($text_width, $text_height);
-      $background_color = imagecolorallocate($this->temp_image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
-      imagefill($this->temp_image, 0, 0, $background_color);
-      imagecopy($this->image, $this->temp_image, $options['x'], $options['y'], 0, 0, $text_width, $text_height);
-    }
-
-    if($truetype === true){
-      $y = $y + $options['size'];
-     imagettftext($this->image, $options['size'], 0, $options['x'], $options['y'], $text_color, $options['font'], $text);
-    }else{
-      $imagestring($this->image, $options['size'], $options['x'], $options['y'], $text, $text_color);
-    }
+    if($options['truetype'])
+      $this->add_true_type_text($text, $text_color, $options);
+    else
+      imagestring($this->image, $options['size'], $options['x'], $options['y'], $text, $text_color);
+    
 
     return $this;
+  }
+  
+  private function text_dimensions($length, $options){
+    if($options['truetype']){
+      $text_dimensions = imagettfbbox($options['size'], 0, $options['font'], $text);
+      return array($text_dimensions[4], $options['size']);
+    }else{
+      if($options['size'] > 5) $size = 5;
+      return array(imagefontwidth($options['size']*$length), imagefontheight($options['size']));
+    }
   }
 
   private function calculate_text_position($position, $width, $height){
   
+  }
+  
+  private function text_background_color($dimensions, $options){
+    if(is_array($options['background_color']))
+      $this->rgb = $options['background_color'];
+    elseif(strlen($options['background_color'] > 3))
+      $this->hex_to_rgb($options['background_color']);
+
+    $this>temp_image = imagecreatetruecolor($dimensions['width'], $dimensions['height']);
+    $background_color = imagecolorallocate($this->temp_image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
+    imagefill($this->temp_image, 0, 0, $background_color);
+    imagecopy($this->image, $this->temp_image, $options['x'], $options['y'], 0, 0, $dimensions['width'], $dimensions['height']);
+  }
+
+  private function add_truetype_text($text, $text_color, $options){
+    $y = $options['y'] + $options['size'];
+    imagettftext($this->image, $options['size'], 0, $options['x'], $options['y'], $text_color, $options['font'], $text);
   }
 
   public function merge($image, $position, $alpha = 100){
