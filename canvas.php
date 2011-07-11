@@ -220,7 +220,8 @@ class canvas{
     $h = imagesy($this->image);
 
     $this->temp_image = imagecreatetruecolor($w, $h);
-    $this->flip_$orientation($w, $h);
+    $method = "flip_{$orientation}";
+    $this->$method($w, $h);
 
     $this->image = $this->temp_image;
     return $this;
@@ -259,7 +260,7 @@ class canvas{
       list($options['x'], $options['y']) = $this->calculate_text_position($options['x'], $options['y'], $dimensions['width'], $dimensions['height']);
 
     if($options['background_color'])
-      $this->text_background_color($dimensions, $options)
+      $this->text_background_color($dimensions, $options);
 
     if($options['truetype'])
       $this->add_true_type_text($text, $text_color, $options);
@@ -280,8 +281,43 @@ class canvas{
     }
   }
 
-  private function calculate_text_position($position, $width, $height){
-  
+  private function calculate_text_position($x, $y, $width, $height){
+    
+    switch($y){
+      case 'top':
+      default:
+        $y = 0;
+        break;
+      case 'bottom':
+        $y = $this->height - $height;
+        break;
+      case 'middle':
+          switch($x){
+            case 'left':
+            case 'right':
+              $y = ($this->height/2)-($height/2);
+              break;
+            case 'center':
+              $y = ($this->height-$height)/2;
+              break;
+          }
+        break;
+    }
+    
+    switch($x){
+      case 'left':
+      default:
+        $x = 0;
+        break;
+      case 'center':
+        $x = ($this->width-$width)/2;
+        break;
+      case 'right':
+        $x = $this->width - $width;
+        break;
+    }
+    
+    return array($x, $y);
   }
   
   private function text_background_color($dimensions, $options){
@@ -290,7 +326,7 @@ class canvas{
     elseif(strlen($options['background_color'] > 3))
       $this->hex_to_rgb($options['background_color']);
 
-    $this>temp_image = imagecreatetruecolor($dimensions['width'], $dimensions['height']);
+    $this->temp_image = imagecreatetruecolor($dimensions['width'], $dimensions['height']);
     $background_color = imagecolorallocate($this->temp_image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
     imagefill($this->temp_image, 0, 0, $background_color);
     imagecopy($this->image, $this->temp_image, $options['x'], $options['y'], 0, 0, $dimensions['width'], $dimensions['height']);
