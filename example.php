@@ -13,7 +13,7 @@ $canvas->set_rgb('#df0d32')
       
 $canvas->set_rgb(array(0, 0, 0))
        ->add_text("teste", array(
-            "size" => 12,
+            "size" => 40,
             "x" => 0,
             "y" => 0,
             "truetype" => true,

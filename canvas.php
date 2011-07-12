@@ -267,8 +267,7 @@ class canvas{
 
   public function add_text($text, $options = array()){
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
-    $dimensions = $this->text_dimensions(strlen($text), $options);
-
+    $dimensions = $this->text_dimensions($text, $options);
     if(is_string($options['x'] && is_string($options['y'])))
       list($options['x'], $options['y']) = $this->calculate_text_position($options['x'], $options['y'], $dimensions['width'], $dimensions['height']);
 
@@ -283,13 +282,16 @@ class canvas{
     return $this;
   }
   
-  private function text_dimensions($length, $options){
+  private function text_dimensions($text, $options){
     if($options['truetype']){
       $text_dimensions = imagettfbbox($options['size'], 0, $options['font'], $text);
       return array($text_dimensions[4], $options['size']);
     }else{
       if($options['size'] > 5) $size = 5;
-      return array(imagefontwidth($options['size']*$length), imagefontheight($options['size']));
+      return array(
+          imagefontwidth($options['size']*strlen($text)), 
+          imagefontheight($options['size'])
+      );
     }
   }
 
@@ -345,8 +347,7 @@ class canvas{
   }
 
   private function add_truetype_text($text, $text_color, $options){
-    $y = $options['y'] + $options['size'];
-    imagettftext($this->image, $options['size'], 0, $options['x'], $options['y'], $text_color, $options['font'], $text);
+    imagettftext($this->image, $options['size'], 0, $options['x'], ($options['y']+$options['size']), $text_color, $options['font'], $text);
   }
 
   public function merge($image, $position, $alpha = 100){
