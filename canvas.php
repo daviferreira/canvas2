@@ -89,6 +89,7 @@ class canvas{
   }
 
   public function create_empty_image($width, $height){
+    if(!$width || !$height) return false;
     $this->width = $width;
     $this->height = $height;
     $this->image = imagecreatetruecolor($this->width, $this->height);

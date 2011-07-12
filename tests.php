@@ -1,4 +1,5 @@
 <?php
+error_reporting(1);
 require_once 'simpletest/autorun.php';
 require_once 'canvas.php';
 
@@ -52,6 +53,20 @@ class CanvasTest extends UnitTestCase {
     $this->assertFalse($img->load_url($url));
     $this->assertEqual($img->error_message(), "Invalid image URL.");
   }
+  
+  function test_create_empty_image_with_width_and_height(){
+    $img = new canvas;
+    $this->assertTrue($img->create_empty_image(200, 300) instanceof canvas);
+  }
+  
+  function test_create_empty_image_with_only_width(){
+    $img = new canvas;
+    $this->assertFalse($img->create_empty_image(200));
+  }
+  
+  function test_create_empty_image_with_only_height(){
+    $img = new canvas;
+    $this->assertFalse($img->create_empty_image(null, 200));
+  }
 
 }
-?>
