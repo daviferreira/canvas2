@@ -9,13 +9,15 @@ $file = "test_image.jpg";
 $canvas = new canvas($file);
 
 $canvas->set_rgb('#df0d32')
-       ->resize("90%", "30%", 'fill')
-       ->set_rgb("#fff")
+       ->resize("90%", "30%", 'fill');
+      
+$canvas->set_rgb(array(0, 0, 0))
        ->add_text("teste", array(
             "size" => 12,
             "x" => 0,
             "y" => 0,
             "truetype" => true,
+            'font' => './almosnow.ttf',
          ));
          
 //var_dump($canvas->error_message());

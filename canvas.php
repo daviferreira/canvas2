@@ -77,7 +77,7 @@ class canvas{
     $this->extension = strtolower($pathinfo['extension']);
     $this->basename = $pathinfo['basename'];
     $this->dirname = $pathinfo['dirname'];
-    $this->format = $this->image_formats[$this->extension];
+    $this->format = (isset($this->image_formats[$this->extension]) ? $this->image_formats[$this->extension] : null);
   }
 
   private function is_image(){
@@ -112,12 +112,14 @@ class canvas{
   }
 
   public function set_rgb($rgb){
-    if(is_array($rgb)) 
+    if(is_array($rgb)){ 
       $this->rgb = $rgb;
-    elseif($this->hex_to_rgb($rgb))
       return $this;
-    else
+    }elseif($this->hex_to_rgb($rgb)){
+      return $this;
+    }else{
       return false;
+    }
   }
 
   private function hex_to_rgb($hex_color){
@@ -265,7 +267,6 @@ class canvas{
 
   public function add_text($text, $options = array()){
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
-
     $dimensions = $this->text_dimensions(strlen($text), $options);
 
     if(is_string($options['x'] && is_string($options['y'])))
@@ -275,10 +276,9 @@ class canvas{
       $this->text_background_color($dimensions, $options);
 
     if($options['truetype'])
-      $this->add_true_type_text($text, $text_color, $options);
+      $this->add_truetype_text($text, $text_color, $options);
     else
       imagestring($this->image, $options['size'], $options['x'], $options['y'], $text, $text_color);
-    
 
     return $this;
   }
