@@ -3,8 +3,8 @@ error_reporting(E_ALL ^ E_NOTICE ^ E_USER_NOTICE);
 ini_set( 'display_errors','On' );
 ini_set('display_startup_errors',true);
 
-include 'canvas.php';
-$file ="test_image.jpg";
+require_once "canvas.php";
+$file = "test_image.jpg";
 
 $canvas = new canvas($file);
 
@@ -18,7 +18,7 @@ $canvas->set_rgb('#df0d32')
             "truetype" => true,
          ));
          
-#var_dump($canvas->error_message());
+//var_dump($canvas->error_message());
 $canvas->show();
 
 exit;

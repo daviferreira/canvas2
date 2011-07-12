@@ -100,7 +100,7 @@ class canvas{
   }
 
   private function create_image(){
-    $extension = ($this->extension = 'jpg' ? 'jpeg' : $this->extension);
+    $extension = ($this->extension == 'jpg' ? 'jpeg' : $this->extension);
     $function_name = "imagecreatefrom{$extension}";
 
     if(function_exists($function_name))
@@ -112,15 +112,20 @@ class canvas{
   }
 
   public function set_rgb($rgb){
-    if(is_array($rgb)) $this->rgb = $rgb;
-    else $this->hex_to_rgb($rgb);
-    return $this;
+    if(is_array($rgb)) 
+      $this->rgb = $rgb;
+    elseif($this->hex_to_rgb($rgb))
+      return $this;
+    else
+      return false;
   }
 
   private function hex_to_rgb($hex_color){
     $hex_color = str_replace( '#', '', $hex_color );
     if(strlen($hex_color) == 3) // #fff, #000 etc. 
       $hex_color .= $hex_color;
+    if(strlen($hex_color) != 6)
+      return false;
     $this->rgb = array(
       hexdec(substr($hex_color, 0, 2)),
       hexdec(substr($hex_color, 2, 2)),
@@ -137,6 +142,8 @@ class canvas{
   public function resize($new_width = null, $new_height = null, $method = null){
     if(!$new_width && !$new_height){
       $this->error = "Inform a new width and/or a new height.";
+      return false;
+    }elseif(!is_resource($this->image)){
       return false;
     }
 
@@ -358,7 +365,6 @@ class canvas{
   public function save($destination){
     if(!is_dir(dirname($destination)))
       $this->error = "Invalid destination directory.";
-
     if(!$this->error){
       $this->output_image($destination);  
       return true;
@@ -381,7 +387,7 @@ class canvas{
       imagejpeg($this->image, $destination, $this->quality);
     elseif($extension == 'png')
       imagepng($this->image, $destination);
-    elseif($extensions == 'gif')
+    elseif($extension == 'gif')
       imagegif($this->image, $destination);
     else
       return false;
