@@ -15,7 +15,7 @@ class canvas{
 
   private $crop_coordinates;
 
-  private $error;
+  private $error = "";
   
   private $image_formats = array(
     'jpeg' => 2,
@@ -35,7 +35,10 @@ class canvas{
   public function load($file){
     $this->file = $file;
     $this->image_info();
-    return $this;
+    if(!$this->error)
+      return $this;
+    else
+      return false;
   }
   
   public function load_url($url){
@@ -43,12 +46,13 @@ class canvas{
     $this->file_info();
     if(!$this->format){
       $this->error = "Invalid image URL.";
+      return false;
     }else{
       $this->create_image();
       $this->width = imagesx($this->image);
       $this->height = imagesy($this->image);
+      return $this;
     }
-    return $this;
   }
 
   private function image_info(){
