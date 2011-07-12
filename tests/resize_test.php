@@ -330,5 +330,24 @@ class ResizeTest extends UnitTestCase {
     $this->assertFalse($img->resize());
     $this->assertEqual($img->error_message(), "Inform a new width and/or a new height.");
   }
-  
+
+  function test_image_resize_with_width_proportion(){
+    $img = new canvas(dirname(__FILE__)."/images/test_image.jpg");
+    $img->resize("200");
+    $img->save("/tmp/test_image.jpg");
+    $imagesize = getimagesize("/tmp/test_image.jpg");
+    $this->assertEqual($imagesize[1], 200);
+    @unlink("/tmp/test_image.jpg");
+  }
+
+  function test_image_resize_with_height_proportion(){
+    $img = new canvas(dirname(__FILE__)."/images/test_image.jpg");
+    $img->resize(null, "200");
+    $img->save("/tmp/test_image.jpg");
+    $imagesize = getimagesize("/tmp/test_image.jpg");
+    $this->assertEqual($imagesize[0], 200);
+    @unlink("/tmp/test_image.jpg");
+  }
+
+
 }
