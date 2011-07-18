@@ -88,14 +88,14 @@ class canvas{
       return true;
   }
 
-  public function create_empty_image($width, $height){
+  public function create_empty_image($width, $height, $extension = "jpg"){
     if(!$width || !$height) return false;
     $this->width = $width;
     $this->height = $height;
     $this->image = imagecreatetruecolor($this->width, $this->height);
     $background_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
     imagefill($this->image, 0, 0, $background_color);
-    $this->extension = 'jpg';
+    $this->extension = $extension;
     return $this;
   }
 

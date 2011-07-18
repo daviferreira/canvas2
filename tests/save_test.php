@@ -1,5 +1,5 @@
 <?php
-class SaveAndShowTest extends UnitTestCase {
+class SaveTest extends UnitTestCase {
 
   function test_save_jpeg_image(){
     $img = new canvas(dirname(__FILE__)."/images/test_image.jpg");
@@ -32,11 +32,6 @@ class SaveAndShowTest extends UnitTestCase {
   function test_save_invalid_image(){
     $img = new canvas(dirname(__FILE__)."/../example.php");
     $this->assertFalse($img->save("/tmp/test_image.php"));
-  }
-
-  function test_show_jpeg_image(){
-    $img = new canvas(dirname(__FILE__)."/images/test_image.bmp");
-    //$img->show(); 
   }
 
 }
