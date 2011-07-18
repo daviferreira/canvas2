@@ -349,5 +349,36 @@ class ResizeTest extends UnitTestCase {
     @unlink("/tmp/test_image.jpg");
   }
 
+  function test_image_resize_with_percentual_width(){
+    $img = new canvas;
+    $img->create_empty_image(200, 200);
+    $img->resize("30%");
+    $img->save("/tmp/test_image.jpg");
+    $imagesize = getimagesize("/tmp/test_image.jpg");
+    $this->assertEqual($imagesize[0], 60);
+    @unlink("/tmp/test_image.jpg");
+
+  }
+
+  function test_image_resize_with_percentual_height(){
+    $img = new canvas;
+    $img->create_empty_image(200, 200);
+    $img->resize("", "30%");
+    $img->save("/tmp/test_image.jpg");
+    $imagesize = getimagesize("/tmp/test_image.jpg");
+    $this->assertEqual($imagesize[1], 60);
+    @unlink("/tmp/test_image.jpg");
+  }
+
+  function test_image_resize_with_percentual_width_and_height(){
+    $img = new canvas;
+    $img->create_empty_image(200, 200);
+    $img->resize("25%", "30%");
+    $img->save("/tmp/test_image.jpg");
+    $imagesize = getimagesize("/tmp/test_image.jpg");
+    $this->assertEqual($imagesize[0], 50);
+    $this->assertEqual($imagesize[1], 60);
+    @unlink("/tmp/test_image.jpg");    
+  }
 
 }
