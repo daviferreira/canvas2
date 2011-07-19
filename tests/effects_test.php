@@ -3,6 +3,8 @@ class EffectsTest extends UnitTestCase {
   
   function __construct(){
     $this->img = new canvas(dirname(__FILE__)."/images/test_image.jpg");
+    $this->filters = array('blur', 'gaussian_blur', 'selective_blur', 'brightness', 'grayscale', 'colorize', 
+                           'contrast', 'edge', 'emboss', 'negate', 'noise', 'smooth', 'pixelate');
   }
   
   function test_horizontal_flip(){
@@ -43,4 +45,9 @@ class EffectsTest extends UnitTestCase {
    }
   
   // filters
+  function test_filters(){
+    foreach($this->filters as $filter)
+      $this->assertTrue($this->img->filter($filter) instanceof canvas);
+  }
+
 }

@@ -261,7 +261,7 @@ class canvas{
   }
 
   public function rotate($degrees){
-    $background_color = imagecolorallocate($this->image, $this->rgb[0], $this->rbg[1], $this->rgb[2]);
+    $background_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
     
     $this->image = imagerotate($this->image, $degrees, $background_color);
 
@@ -388,8 +388,81 @@ class canvas{
     return $this;
   }
   
-  public function filter($filter, $args, $ammount = 1){
-  
+  public function filter($filter, $ammount = 1, $args = array(0 => null, 1 => null, 2 => null, 3 => null)){
+    if(!function_exists("imagefilter"))
+      return false;
+    $filter = strtolower($filter);
+    switch($filter){
+      case 'blur':
+      case 'gaussian_blur':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter( $this->image, IMG_FILTER_GAUSSIAN_BLUR );
+        else
+          imagefilter( $this->image, IMG_FILTER_GAUSSIAN_BLUR );
+        break;
+      case 'selective_blur':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter( $this->image, IMG_FILTER_SELECTIVE_BLUR );
+        else
+          imagefilter( $this->image, IMG_FILTER_SELECTIVE_BLUR );
+        break;
+      case 'brightness':
+        imagefilter($this->image, IMG_FILTER_BRIGHTNESS, $args[0]);
+        break;
+      case 'grayscale':
+        imagefilter($this->image, IMG_FILTER_GRAYSCALE);
+        break;
+      case 'colorize':
+        imagefilter($this->image, IMG_FILTER_COLORIZE, $args[0], $args[1], $args[2], $args[3]);
+        break;
+      case 'contrast':
+        imagefilter($this->image, IMG_FILTER_CONTRAST, $args[0]);
+        break;
+      case 'edge':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter($this->image, IMG_FILTER_EDGEDETECT);
+        else
+          imagefilter($this->image, IMG_FILTER_EDGEDETECT);
+        break;
+      case 'emboss':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter($this->image, IMG_FILTER_EMBOSS);
+        else
+          imagefilter($this->image, IMG_FILTER_EMBOSS);
+        break;
+      case 'negate':
+        imagefilter($this->image, IMG_FILTER_NEGATE);
+        break;
+      case 'noise':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter($this->image, IMG_FILTER_MEAN_REMOVAL);
+        else
+          imagefilter($this->image, IMG_FILTER_MEAN_REMOVAL);
+        break;
+      case 'smooth':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter($this->image, IMG_FILTER_SMOOTH, $args[0]);
+        else
+          imagefilter($this->image, IMG_FILTER_SMOOTH, $args[0]);
+        break;
+      case 'pixelate':
+        if(is_numeric($ammount) && $ammount > 1)
+          for($i = 1; $i <= $ammount; $i++)
+            imagefilter($this->image, IMG_FILTER_PIXELATE, $args[0], $args[1]);
+        else
+          imagefilter($this->image, IMG_FILTER_PIXELATE, $args[0], $args[1]);
+        break;
+      default:
+        return false;
+        break;
+    }
+    return $this;
   }
 
   public function set_quality($quality){

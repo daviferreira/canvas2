@@ -10,4 +10,5 @@ $canvas = new canvas($file);
 
 $canvas->set_rgb('#df0d32')
        ->merge("test_image.png", array("bottom", "right"))
+       ->filter("blur", 23)
        ->show();
