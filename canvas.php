@@ -382,7 +382,7 @@ class canvas{
     return $this;
   }
   
-  public function filter($filter, $ammount = 1, $args){
+  public function filter($filter, $args, $ammount = 1){
   
   }
 
