@@ -273,7 +273,7 @@ class canvas{
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
     $dimensions = $this->text_dimensions($text, $options);
     if(is_string($options['x'] && is_string($options['y'])))
-      list($options['x'], $options['y']) = $this->calculate_position($options['x'], $options['y'], $dimensions['width'], $dimensions['height']);
+      list($options['x'], $options['y']) = $this->calculate_position($options['y'], $options['x'], $dimensions['width'], $dimensions['height']);
 
     if($options['background_color'])
       $this->text_background_color($dimensions, $options);
@@ -299,8 +299,7 @@ class canvas{
     }
   }
 
-  private function calculate_position($x, $y, $width, $height){
-    
+  private function calculate_position($y, $x, $width, $height){
     switch($y){
       case 'top':
       default:
@@ -321,7 +320,7 @@ class canvas{
           }
         break;
     }
-    
+
     switch($x){
       case 'left':
       default:
@@ -334,7 +333,7 @@ class canvas{
         $x = $this->width - $width;
         break;
     }
-    
+
     return array($x, $y);
   }
   
@@ -360,19 +359,21 @@ class canvas{
       return false;
     }
     list($w, $h) = getimagesize($image);
-    if(is_string($position['x']) && is_string($position['y']))
-      $position = $this->calculate_position($position['x'], $position['y'], $w, $h);
-    
+
+    if(is_string($position[0]) && is_string($position[1]))
+      $position = $this->calculate_position($position[0], $position[1], $w, $h);
+
     $pathinfo = pathinfo($image);
     $extension = strtolower($pathinfo['extension']);
     $extension = ($extension == 'jpg' ? 'jpeg' : $extension);
     $function_name = "imagecreatefrom{$extension}";
-    
+
     if(function_exists($function_name))
       $image_to_merge = $function_name($image);
     else
       $this->error = "Invalid image file or imagecreate function not enabled.";
 
+    list($x, $y) = $position;
     if(is_numeric($alpha) && (($alpha > 0) && ($alpha < 100)))
       imagecopymerge($this->image, $image_to_merge, $x, $y, 0, 0, $w, $h, $alpha);
     else

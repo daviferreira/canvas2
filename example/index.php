@@ -4,12 +4,12 @@ ini_set('display_errors','On');
 ini_set('display_startup_errors', true);
 
 require_once "../canvas.php";
-$file = "test_image.png";
+$file = "test_image.jpg";
 
 $canvas = new canvas($file);
 
 $canvas->set_rgb('#df0d32')
-       ->merge("test_image.jpg", array(200, 0))
+       ->merge("test_image.png", array("bottom", "right"))
        ->show();
          
 exit;
