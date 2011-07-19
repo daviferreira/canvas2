@@ -230,9 +230,12 @@ class canvas{
   }
 
   public function flip($orientation = 'horizontal'){
+    $orientation = strtolower($orientation);
+    if($orientation != "horizontal" && $orientation != "vertical")
+      return false;
+
     $w = imagesx($this->image);
     $h = imagesy($this->image);
-
     $this->temp_image = imagecreatetruecolor($w, $h);
     $method = "flip_{$orientation}";
     $this->$method($w, $h);
@@ -256,16 +259,17 @@ class canvas{
     
     $this->image = imagerotate($this->image, $degrees, $background_color);
 
-    imagealphablending($this>image, true);
+    imagealphablending($this->image, true);
     imagesavealpha($this->image, true);
 
-    $this->width = imagesx($this>image);
+    $this->width = imagesx($this->image);
     $this->height = imagesy($this->image);
 
     return $this; 
   }
 
   public function add_text($text, $options = array()){
+    if(!$text) return false;
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
     $dimensions = $this->text_dimensions($text, $options);
     if(is_string($options['x'] && is_string($options['y'])))

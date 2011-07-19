@@ -12,6 +12,8 @@ class AllTests extends TestSuite {
         $this->addFile(dirname(__FILE__).'/load_and_create_test.php');
         $this->addFile(dirname(__FILE__).'/colors_test.php');
         $this->addFile(dirname(__FILE__).'/resize_test.php');
+        $this->addFile(dirname(__FILE__).'/effects_test.php');
+        $this->addFile(dirname(__FILE__).'/text_test.php');
         $this->addFile(dirname(__FILE__).'/save_test.php');
         $this->addFile(dirname(__FILE__).'/show_test.php');
     }
