@@ -100,5 +100,10 @@ class LoadAndCreateTest extends UnitTestCase {
     $img = new canvas;
     $this->assertTrue($img->create_empty_image(200, 300) instanceof canvas);
   }
+  
+  function test_create_empty_image_with_alpha(){
+    $img = new canvas;
+    $this->assertTrue($img->create_empty_image(200, 300, "png", 127) instanceof canvas);
+  }
 
 }
