@@ -17,7 +17,7 @@ class TextTest extends UnitTestCase {
   function test_add_truetype_text_to_image(){
     $options = array(
       "truetype" => true,
-      "font" => "../almosnow.ttf"
+      "font" => "../example/almosnow.ttf"
     );
     //$this->assertTrue($this->img->add_text("text", $options) instanceof canvas);
   }

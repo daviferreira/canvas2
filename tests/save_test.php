@@ -30,8 +30,8 @@ class SaveTest extends UnitTestCase {
   }
 
   function test_save_invalid_image(){
-    $img = new canvas(dirname(__FILE__)."/../example.php");
-    $this->assertFalse($img->save("/tmp/test_image.php"));
+    $img = new canvas(dirname(__FILE__)."/../README.markdown");
+    $this->assertFalse($img->save("/tmp/README.markdown"));
   }
 
 }

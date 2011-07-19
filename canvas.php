@@ -106,7 +106,7 @@ class canvas{
     if(function_exists($function_name))
       $this->image = $function_name($this->file);
     else
-      $this->error = "Invalid image file or imagecreat function not enabled.";
+      $this->error = "Invalid image file or imagecreate function not enabled.";
 
     return $this;
   }
@@ -273,7 +273,7 @@ class canvas{
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
     $dimensions = $this->text_dimensions($text, $options);
     if(is_string($options['x'] && is_string($options['y'])))
-      list($options['x'], $options['y']) = $this->calculate_text_position($options['x'], $options['y'], $dimensions['width'], $dimensions['height']);
+      list($options['x'], $options['y']) = $this->calculate_position($options['x'], $options['y'], $dimensions['width'], $dimensions['height']);
 
     if($options['background_color'])
       $this->text_background_color($dimensions, $options);
@@ -299,7 +299,7 @@ class canvas{
     }
   }
 
-  private function calculate_text_position($x, $y, $width, $height){
+  private function calculate_position($x, $y, $width, $height){
     
     switch($y){
       case 'top':
@@ -355,9 +355,32 @@ class canvas{
   }
 
   public function merge($image, $position, $alpha = 100){
-  
-  }
+    if(!file_exists($image)){
+      $this->error = "Invalid image.";
+      return false;
+    }
+    list($w, $h) = getimagesize($image);
+    if(is_string($position['x']) && is_string($position['y']))
+      $position = $this->calculate_position($position['x'], $position['y'], $w, $h);
+    
+    $pathinfo = pathinfo($image);
+    $extension = strtolower($pathinfo['extension']);
+    $extension = ($extension == 'jpg' ? 'jpeg' : $extension);
+    $function_name = "imagecreatefrom{$extension}";
+    
+    if(function_exists($function_name))
+      $image_to_merge = $function_name($image);
+    else
+      $this->error = "Invalid image file or imagecreate function not enabled.";
 
+    if(is_numeric($alpha) && (($alpha > 0) && ($alpha < 100)))
+      imagecopymerge($this->image, $image_to_merge, $x, $y, 0, 0, $w, $h, $alpha);
+    else
+      imagecopy($this->image, $image_to_merge, $x, $y, 0, 0, $w, $h);
+    
+    return $this;
+  }
+  
   public function filter($filter, $ammount = 1, $arguments){
   
   }
@@ -368,13 +391,11 @@ class canvas{
   }
 
   public function save($destination){
-    if(!is_dir(dirname($destination)))
+    if(!is_dir(dirname($destination))){
       $this->error = "Invalid destination directory.";
-    if(!$this->error){
-      $this->output_image($destination);  
-      return true;
-    }else{
       return false;
+    }else{
+      return $this->output_image($destination);  
     }
   }
   
@@ -388,6 +409,7 @@ class canvas{
   private function output_image($destination = null){
     $pathinfo = pathinfo($destination);
     $extension = ($pathinfo['extension'] ? strtolower($pathinfo['extension']) : $this->extension);
+
     if($extension == 'jpg' || $extension =='jpeg' || $extension == 'bmp')
       imagejpeg($this->image, $destination, $this->quality);
     elseif($extension == 'png')

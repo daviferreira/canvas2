@@ -27,7 +27,7 @@ class LoadAndCreateTest extends UnitTestCase {
   }
   
   function test_construct_with_non_image_file(){
-    $file = dirname(__FILE__)."/../example.php";
+    $file = dirname(__FILE__)."/../README.markdown";
     $img = new canvas($file);
     $this->assertEqual($img->error_message(), "Invalid file. {$file} is not an image file.");
   }
@@ -59,7 +59,7 @@ class LoadAndCreateTest extends UnitTestCase {
   }
   
   function test_load_with_non_image_file(){
-    $file = dirname(__FILE__)."/../example.php";
+    $file = dirname(__FILE__)."/../README.markdown";
     $img = new canvas;
     $this->assertFalse($img->load($file));
     $this->assertEqual($img->error_message(), "Invalid file. {$file} is not an image file.");
