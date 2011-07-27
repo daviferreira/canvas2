@@ -1,5 +1,5 @@
 <?php
-include 'imagecreatefrombmp.php';
+include "imagecreatefrombmp.php";
 
 class canvas{
 
@@ -18,11 +18,11 @@ class canvas{
   private $error = "";
   
   private $image_formats = array(
-    'jpeg' => 2,
-    'jpg' => 2,
-    'gif' => 1,
-    'png' => 3,
-    'bmp' => 6
+    "jpeg" => 2,
+    "jpg" => 2,
+    "gif" => 1,
+    "png" => 3,
+    "bmp" => 6
   );
 
   public function __construct($file = null){
@@ -49,8 +49,7 @@ class canvas{
       return false;
     }else{
       $this->create_image();
-      $this->width = imagesx($this->image);
-      $this->height = imagesy($this->image);
+      $this->update_dimensions();
       return $this;
     }
   }
@@ -71,12 +70,18 @@ class canvas{
     list($this->width, $this->height, $this->html_size, $this->format) = getimagesize($this->file);
     return $this; 
   }
+  
+  private function update_dimensions(){
+    $this->width = imagesx($this->image);
+    $this->height = imagesy($this->image);
+    return $this;
+  }
 
   private function file_info(){
     $pathinfo = pathinfo($this->file);
-    $this->extension = strtolower($pathinfo['extension']);
-    $this->basename = $pathinfo['basename'];
-    $this->dirname = $pathinfo['dirname'];
+    $this->extension = strtolower($pathinfo["extension"]);
+    $this->basename = $pathinfo["basename"];
+    $this->dirname = $pathinfo["dirname"];
     $this->format = (isset($this->image_formats[$this->extension]) ? $this->image_formats[$this->extension] : null);
   }
 
@@ -106,7 +111,7 @@ class canvas{
   }
 
   private function create_image(){
-    $extension = ($this->extension == 'jpg' ? 'jpeg' : $this->extension);
+    $extension = ($this->extension == "jpg" ? "jpeg" : $this->extension);
     $function_name = "imagecreatefrom{$extension}";
 
     if(function_exists($function_name))
@@ -129,7 +134,7 @@ class canvas{
   }
 
   private function hex_to_rgb($hex_color){
-    $hex_color = str_replace( '#', '', $hex_color );
+    $hex_color = str_replace( "#", "", $hex_color );
     if(strlen($hex_color) == 3) // #fff, #000 etc. 
       $hex_color .= $hex_color;
     if(strlen($hex_color) != 6)
@@ -165,8 +170,7 @@ class canvas{
     if(!method_exists($this, $method))
       $method = "resize_with_no_method";
     
-    $this->$method();
-    
+    $this->$method()->update_dimensions();
     return $this;
   }
   
@@ -179,10 +183,10 @@ class canvas{
   }
   
   private function check_for_percentages(){
-    if(strpos($this->new_width, '%'))
-      $this->new_width = round($this->width*(preg_replace('/[^0-9]/', '', $this->new_width)/100)); 
-    if(strpos($this->new_height, '%'))
-      $this->new_height = round($this->height*(preg_replace('/[^0-9]/', '', $this->new_height)/100));
+    if(strpos($this->new_width, "%"))
+      $this->new_width = round($this->width*(preg_replace("/[^0-9]/", "", $this->new_width)/100)); 
+    if(strpos($this->new_height, "%"))
+      $this->new_height = round($this->height*(preg_replace("/[^0-9]/", "", $this->new_height)/100));
   }
 
   private function resize_with_no_method(){
@@ -190,6 +194,7 @@ class canvas{
     imagecopyresampled($this->temp_image, $this->image, 0, 0, 0, 0, 
                        $this->new_width, $this->new_height, $this->width, $this->height);
     $this->image = $this->temp_image;
+    return $this;
   }
 
   private function fill(){
@@ -218,6 +223,7 @@ class canvas{
     
     imagecopyresampled($this->temp_image, $this->image, $dif_x, $dif_y, 0, 0, $dif_w, $dif_h, $this->width, $this->height);
     $this->image = $this->temp_image;
+    return $this;
   }
 
   private function resize_with_crop(){
@@ -233,9 +239,10 @@ class canvas{
                        $this->crop_coordinates[3], $this->width, $this->height);
 
     $this->image = $this->temp_image;
+    return $this;
   }
 
-  public function flip($orientation = 'horizontal'){
+  public function flip($orientation = "horizontal"){
     $orientation = strtolower($orientation);
     if($orientation != "horizontal" && $orientation != "vertical")
       return false;
@@ -268,59 +275,63 @@ class canvas{
     imagealphablending($this->image, true);
     imagesavealpha($this->image, true);
 
-    $this->width = imagesx($this->image);
-    $this->height = imagesy($this->image);
+    $this->update_dimensions();
 
     return $this; 
   }
 
-  public function add_text($text, $options = array()){
+  public function text($text, $options = array()){
     if(!$text) return false;
+    
+    if(isset($options["color"]))
+      $this->set_rgb($options["color"]);
+      
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
     $dimensions = $this->text_dimensions($text, $options);
-    if(is_string($options['x'] && is_string($options['y'])))
-      list($options['x'], $options['y']) = $this->calculate_position($options['y'], $options['x'], $dimensions['width'], $dimensions['height']);
 
-    if($options['background_color'])
+    if(is_string($options["x"]) && is_string($options["y"]))
+      list($options["x"], $options["y"]) = $this->calculate_position($options["x"], $options["y"], $dimensions["width"], $dimensions["height"]);
+      
+    if($options["background_color"])
       $this->text_background_color($dimensions, $options);
 
-    if($options['truetype'])
+    if($options["truetype"])
       $this->add_truetype_text($text, $text_color, $options);
     else
-      imagestring($this->image, $options['size'], $options['x'], $options['y'], $text, $text_color);
+      imagestring($this->image, $options["size"], $options["x"], $options["y"], $text, $text_color);
 
     return $this;
   }
   
   private function text_dimensions($text, $options){
-    if($options['truetype']){
-      $text_dimensions = imagettfbbox($options['size'], 0, $options['font'], $text);
-      return array($text_dimensions[4], $options['size']);
+    if($options["truetype"]){
+      $text_dimensions = imagettfbbox($options["size"], 0, $options["font"], $text);
+      return array($text_dimensions[4], $options["size"]);
     }else{
-      if($options['size'] > 5) $size = 5;
+      if($options["size"] > 5) $size = 5;
       return array(
-          imagefontwidth($options['size']*strlen($text)), 
-          imagefontheight($options['size'])
+          "width" => imagefontwidth($options["size"])*strlen($text), 
+          "height" => imagefontheight($options["size"])
       );
     }
   }
 
-  private function calculate_position($y, $x, $width, $height){
+  private function calculate_position($x, $y, $width, $height){
     switch($y){
-      case 'top':
+      case "top":
       default:
         $y = 0;
         break;
-      case 'bottom':
+      case "bottom":
         $y = $this->height - $height;
         break;
-      case 'middle':
+      case "middle":
           switch($x){
-            case 'left':
-            case 'right':
+            case "left":
+            case "right":
               $y = ($this->height/2)-($height/2);
               break;
-            case 'center':
+            case "center":
               $y = ($this->height-$height)/2;
               break;
           }
@@ -328,14 +339,14 @@ class canvas{
     }
 
     switch($x){
-      case 'left':
+      case "left":
       default:
         $x = 0;
         break;
-      case 'center':
+      case "center":
         $x = ($this->width-$width)/2;
         break;
-      case 'right':
+      case "right":
         $x = $this->width - $width;
         break;
     }
@@ -344,19 +355,16 @@ class canvas{
   }
   
   private function text_background_color($dimensions, $options){
-    if(is_array($options['background_color']))
-      $this->rgb = $options['background_color'];
-    elseif(strlen($options['background_color'] > 3))
-      $this->hex_to_rgb($options['background_color']);
+    $this->set_rgb($options["background_color"]);
 
-    $this->temp_image = imagecreatetruecolor($dimensions['width'], $dimensions['height']);
+    $this->temp_image = imagecreatetruecolor($dimensions["width"], $dimensions["height"]);
     $background_color = imagecolorallocate($this->temp_image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
     imagefill($this->temp_image, 0, 0, $background_color);
-    imagecopy($this->image, $this->temp_image, $options['x'], $options['y'], 0, 0, $dimensions['width'], $dimensions['height']);
+    imagecopy($this->image, $this->temp_image, $options["x"], $options["y"], 0, 0, $dimensions["width"], $dimensions["height"]);
   }
 
   private function add_truetype_text($text, $text_color, $options){
-    imagettftext($this->image, $options['size'], 0, $options['x'], ($options['y']+$options['size']), $text_color, $options['font'], $text);
+    imagettftext($this->image, $options["size"], 0, $options["x"], ($options["y"]+$options["size"]), $text_color, $options["font"], $text);
   }
 
   public function merge($image, $position, $alpha = 100){
@@ -370,8 +378,8 @@ class canvas{
       $position = $this->calculate_position($position[0], $position[1], $w, $h);
 
     $pathinfo = pathinfo($image);
-    $extension = strtolower($pathinfo['extension']);
-    $extension = ($extension == 'jpg' ? 'jpeg' : $extension);
+    $extension = strtolower($pathinfo["extension"]);
+    $extension = ($extension == "jpg" ? "jpeg" : $extension);
     $function_name = "imagecreatefrom{$extension}";
 
     if(function_exists($function_name))
@@ -393,65 +401,65 @@ class canvas{
       return false;
     $filter = strtolower($filter);
     switch($filter){
-      case 'blur':
-      case 'gaussian_blur':
+      case "blur":
+      case "gaussian_blur":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter( $this->image, IMG_FILTER_GAUSSIAN_BLUR );
         else
           imagefilter( $this->image, IMG_FILTER_GAUSSIAN_BLUR );
         break;
-      case 'selective_blur':
+      case "selective_blur":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter( $this->image, IMG_FILTER_SELECTIVE_BLUR );
         else
           imagefilter( $this->image, IMG_FILTER_SELECTIVE_BLUR );
         break;
-      case 'brightness':
+      case "brightness":
         imagefilter($this->image, IMG_FILTER_BRIGHTNESS, $args[0]);
         break;
-      case 'grayscale':
+      case "grayscale":
         imagefilter($this->image, IMG_FILTER_GRAYSCALE);
         break;
-      case 'colorize':
+      case "colorize":
         imagefilter($this->image, IMG_FILTER_COLORIZE, $args[0], $args[1], $args[2], $args[3]);
         break;
-      case 'contrast':
+      case "contrast":
         imagefilter($this->image, IMG_FILTER_CONTRAST, $args[0]);
         break;
-      case 'edge':
+      case "edge":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter($this->image, IMG_FILTER_EDGEDETECT);
         else
           imagefilter($this->image, IMG_FILTER_EDGEDETECT);
         break;
-      case 'emboss':
+      case "emboss":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter($this->image, IMG_FILTER_EMBOSS);
         else
           imagefilter($this->image, IMG_FILTER_EMBOSS);
         break;
-      case 'negate':
+      case "negate":
         imagefilter($this->image, IMG_FILTER_NEGATE);
         break;
-      case 'noise':
+      case "noise":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter($this->image, IMG_FILTER_MEAN_REMOVAL);
         else
           imagefilter($this->image, IMG_FILTER_MEAN_REMOVAL);
         break;
-      case 'smooth':
+      case "smooth":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter($this->image, IMG_FILTER_SMOOTH, $args[0]);
         else
           imagefilter($this->image, IMG_FILTER_SMOOTH, $args[0]);
         break;
-      case 'pixelate':
+      case "pixelate":
         if(is_numeric($ammount) && $ammount > 1)
           for($i = 1; $i <= $ammount; $i++)
             imagefilter($this->image, IMG_FILTER_PIXELATE, $args[0], $args[1]);
@@ -480,7 +488,7 @@ class canvas{
   }
   
   public function show(){
-    header( "Content-type: image/{$this->extension}" );
+    header("Content-type: image/{$this->extension}");
     $this->output_image();
     imagedestroy($this->image);
     exit;
@@ -488,13 +496,13 @@ class canvas{
   
   private function output_image($destination = null){
     $pathinfo = pathinfo($destination);
-    $extension = ($pathinfo['extension'] ? strtolower($pathinfo['extension']) : $this->extension);
+    $extension = ($pathinfo["extension"] ? strtolower($pathinfo["extension"]) : $this->extension);
 
-    if($extension == 'jpg' || $extension =='jpeg' || $extension == 'bmp')
+    if($extension == "jpg" || $extension =="jpeg" || $extension == "bmp")
       imagejpeg($this->image, $destination, $this->quality);
-    elseif($extension == 'png')
+    elseif($extension == "png")
       imagepng($this->image, $destination);
-    elseif($extension == 'gif')
+    elseif($extension == "gif")
       imagegif($this->image, $destination);
     else
       return false;

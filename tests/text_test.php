@@ -5,12 +5,12 @@ class TextTest extends UnitTestCase {
     $this->img = new canvas(dirname(__FILE__)."/images/test_image.jpg");
   }
   
-  function test_add_text_to_image(){
-    $this->assertTrue($this->img->add_text("text") instanceof canvas);
+  function test_text_to_image(){
+    $this->assertTrue($this->img->text("text") instanceof canvas);
   }
 
   function test_add_invalid_text_to_image(){
-    $this->assertFalse($this->img->add_text("") instanceof canvas);
+    $this->assertFalse($this->img->text("") instanceof canvas);
   }
 
   
@@ -19,7 +19,7 @@ class TextTest extends UnitTestCase {
       "truetype" => true,
       "font" => "../example/almosnow.ttf"
     );
-    //$this->assertTrue($this->img->add_text("text", $options) instanceof canvas);
+    //$this->assertTrue($this->img->text("text", $options) instanceof canvas);
   }
   
 }
