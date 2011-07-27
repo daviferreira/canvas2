@@ -25,14 +25,14 @@ class canvas{
     "bmp" => 6
   );
 
-  public function __construct($file = null){
+  function __construct($file = null){
     if($file){
       $this->file = $file;
       $this->image_info();
     } 
   }
 
-  public function load($file){
+  function load($file){
     $this->file = $file;
     $this->image_info();
     if(!$this->error)
@@ -41,7 +41,7 @@ class canvas{
       return false;
   }
   
-  public function load_url($url){
+  function load_url($url){
     $this->file = $url;
     $this->file_info();
     if(!$this->format){
@@ -93,7 +93,7 @@ class canvas{
       return true;
   }
 
-  public function create_empty_image($width, $height, $extension = "jpg", $alpha = false){
+  function create_empty_image($width, $height, $extension = "jpg", $alpha = false){
     if(!$width || !$height) return false;
     $this->width = $width;
     $this->height = $height;
@@ -122,7 +122,7 @@ class canvas{
     return $this;
   }
 
-  public function set_rgb($rgb){
+  function set_rgb($rgb){
     if(is_array($rgb)){ 
       $this->rgb = $rgb;
       return $this;
@@ -147,12 +147,12 @@ class canvas{
     return $this;
   }
 
-  public function set_crop_coordinates($x, $y){
+  function set_crop_coordinates($x, $y){
     $this->crop_coordinates = array($x, $y, $this->width, $this->height);
     return $this;
   }
 
-  public function resize($new_width = null, $new_height = null, $method = null){
+  function resize($new_width = null, $new_height = null, $method = null){
     if(!$new_width && !$new_height){
       $this->error = "Inform a new width and/or a new height.";
       return false;
@@ -242,7 +242,7 @@ class canvas{
     return $this;
   }
 
-  public function flip($orientation = "horizontal"){
+  function flip($orientation = "horizontal"){
     $orientation = strtolower($orientation);
     if($orientation != "horizontal" && $orientation != "vertical")
       return false;
@@ -267,7 +267,7 @@ class canvas{
       imagecopy($this->temp_image, $this->image, 0, $y, 0, ($h - $y - 1), $w, 1);
   }
 
-  public function rotate($degrees){
+  function rotate($degrees){
     $background_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
     
     $this->image = imagerotate($this->image, $degrees, $background_color);
@@ -280,8 +280,11 @@ class canvas{
     return $this; 
   }
 
-  public function text($text, $options = array()){
+  function text($text, $options = array()){
     if(!$text) return false;
+
+    if(!isset($options["size"]))
+      $options["size"] = 5;
     
     if(isset($options["color"]))
       $this->set_rgb($options["color"]);
@@ -289,13 +292,16 @@ class canvas{
     $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
     $dimensions = $this->text_dimensions($text, $options);
 
+    $options["x"] = isset($options["x"]) ? $options["x"] : 0;
+    $options["y"] = isset($options["y"]) ? $options["y"] : 0;
+
     if(is_string($options["x"]) && is_string($options["y"]))
       list($options["x"], $options["y"]) = $this->calculate_position($options["x"], $options["y"], $dimensions["width"], $dimensions["height"]);
       
-    if($options["background_color"])
+    if(isset($options["background_color"]) && $options["background_color"])
       $this->text_background_color($dimensions, $options);
 
-    if($options["truetype"])
+    if(isset($options["truetype"]) && $options["truetype"])
       $this->add_truetype_text($text, $text_color, $options);
     else
       imagestring($this->image, $options["size"], $options["x"], $options["y"], $text, $text_color);
@@ -304,11 +310,12 @@ class canvas{
   }
   
   private function text_dimensions($text, $options){
-    if($options["truetype"]){
+    if(isset($options["truetype"]) && $options["truetype"]){
       $text_dimensions = imagettfbbox($options["size"], 0, $options["font"], $text);
       return array($text_dimensions[4], $options["size"]);
     }else{
-      if($options["size"] > 5) $size = 5;
+      if($options["size"] > 5) 
+        $options["size"] = 5;
       return array(
           "width" => imagefontwidth($options["size"])*strlen($text), 
           "height" => imagefontheight($options["size"])
@@ -367,7 +374,7 @@ class canvas{
     imagettftext($this->image, $options["size"], 0, $options["x"], ($options["y"]+$options["size"]), $text_color, $options["font"], $text);
   }
 
-  public function merge($image, $position, $alpha = 100){
+  function merge($image, $position, $alpha = 100){
     if(!file_exists($image)){
       $this->error = "Invalid image.";
       return false;
@@ -396,7 +403,7 @@ class canvas{
     return $this;
   }
   
-  public function filter($filter, $ammount = 1, $args = array(0 => null, 1 => null, 2 => null, 3 => null)){
+  function filter($filter, $ammount = 1, $args = array()){
     if(!function_exists("imagefilter"))
       return false;
     $filter = strtolower($filter);
@@ -473,12 +480,12 @@ class canvas{
     return $this;
   }
 
-  public function set_quality($quality){
+  function set_quality($quality){
     $this->quality = $quality;
     return $this;
   }
 
-  public function save($destination){
+  function save($destination){
     if(!is_dir(dirname($destination))){
       $this->error = "Invalid destination directory.";
       return false;
@@ -487,7 +494,7 @@ class canvas{
     }
   }
   
-  public function show(){
+  function show(){
     header("Content-type: image/{$this->extension}");
     $this->output_image();
     imagedestroy($this->image);
@@ -508,7 +515,7 @@ class canvas{
       return false;
   }
 
-  public function error_message(){
+  function error_message(){
     return $this->error;
   }
 

@@ -47,7 +47,7 @@ class EffectsTest extends UnitTestCase {
   // filters
   function test_filters(){
     foreach($this->filters as $filter)
-      $this->assertTrue($this->img->filter($filter) instanceof canvas);
+      $this->assertTrue($this->img->filter($filter, 1, array(1, 2, 3, 4)) instanceof canvas);
   }
 
 }
