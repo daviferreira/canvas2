@@ -495,10 +495,15 @@ class canvas{
   }
   
   function show(){
-    header("Content-type: image/{$this->extension}");
-    $this->output_image();
-    imagedestroy($this->image);
-    exit;
+    if(headers_sent()){
+      $this->error = "Headers already sent.";
+      return false;    
+    }else{
+      header("Content-type: image/{$this->extension}");
+      $this->output_image();
+      imagedestroy($this->image);
+      exit;
+    }
   }
   
   private function output_image($destination = null){
