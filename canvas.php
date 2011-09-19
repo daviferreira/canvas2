@@ -494,12 +494,14 @@ class canvas{
     }
   }
   
-  function show(){
+  function show($filename = NULL){
     if(headers_sent()){
       $this->error = "Headers already sent.";
       return false;    
     }else{
-      header("Content-type: image/{$this->extension}");
+      $filename = $filename ? $filename : "image.{$this->extension}"; 
+	    header("Content-type: image/{$this->extension}");
+	    header("Content-Disposition:; filename={$filename}");	
       $this->output_image();
       imagedestroy($this->image);
       exit;
