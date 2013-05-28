@@ -479,6 +479,34 @@ class canvas{
     }
     return $this;
   }
+  
+  public function round($radius = 10, $colour = "FFFFFF") {     
+    /* http://911-need-code-help.blogspot.com/2009/05/generate-images-with-round-corners-on.html 
+    * radius: corner radius in pixels -- default value is 10
+    * colour: corner colour in rgb hex format -- default value is FFFFFF  */
+  
+    /* create mask for top-left corner in memory */
+    $corner_image = imagecreatetruecolor($radius, $radius);
+    $clear_colour = imagecolorallocate($corner_image, 0, 0, 0);
+    $solid_colour = imagecolorallocate($corner_image, hexdec(substr($colour, 0, 2)), hexdec(substr($colour, 2, 2)), hexdec(substr($colour, 4, 2)));
+    imagecolortransparent($corner_image, $clear_colour);
+    imagefill($corner_image, 0, 0, $solid_colour);
+    imagefilledellipse($corner_image, $radius, $radius, $radius * 2, $radius * 2, $clear_colour);
+  
+    /* render the top-left, bottom-left, bottom-right, top-right corners by rotating and copying the mask */
+    $this->img_temp = $this->img;
+    imagecopymerge($this->img_temp, $corner_image, 0, 0, 0, 0, $radius, $radius, 100);
+    $corner_image = imagerotate($corner_image, 90, 0);
+    imagecopymerge($this->img_temp, $corner_image, 0, $this->altura - $radius, 0, 0, $radius, $radius, 100);
+    $corner_image = imagerotate($corner_image, 90, 0);
+    imagecopymerge($this->img_temp, $corner_image, $this->largura - $radius, $this->altura - $radius, 0, 0, $radius, $radius, 100);
+    $corner_image = imagerotate($corner_image, 90, 0);
+    imagecopymerge($this->img_temp, $corner_image, $this->largura - $radius, 0, 0, 0, $radius, $radius, 100);
+  
+    /* output the image -- revise this step according to your needs */
+    $this->img = $this->img_temp;
+    return $this;
+  }  
 
   function set_quality($quality){
     $this->quality = $quality;
