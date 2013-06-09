@@ -10,13 +10,13 @@ class canvas{
   private $format, $extension, $size, $basename, $dirname;
 
   private $rgb = array(255, 255, 255);
-  
+
   private $quality = 100;
 
   private $crop_coordinates;
 
   private $error = "";
-  
+
   private $image_formats = array(
     "jpeg" => 2,
     "jpg" => 2,
@@ -29,7 +29,7 @@ class canvas{
     if($file){
       $this->file = $file;
       $this->image_info();
-    } 
+    }
   }
 
   function load($file){
@@ -40,7 +40,7 @@ class canvas{
     else
       return false;
   }
-  
+
   function load_url($url){
     $this->file = $url;
     $this->file_info();
@@ -68,9 +68,9 @@ class canvas{
 
   private function dimensions(){
     list($this->width, $this->height, $this->html_size, $this->format) = getimagesize($this->file);
-    return $this; 
+    return $this;
   }
-  
+
   private function update_dimensions(){
     $this->width = imagesx($this->image);
     $this->height = imagesy($this->image);
@@ -99,7 +99,7 @@ class canvas{
     $this->height = $height;
     $this->image = imagecreatetruecolor($this->width, $this->height);
     if($alpha){
-      imagealphablending($this->image, false); 
+      imagealphablending($this->image, false);
       imagesavealpha($this->image, true);
       $background_color = imagecolorallocatealpha($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2], $alpha);
     }else{
@@ -123,7 +123,7 @@ class canvas{
   }
 
   function set_rgb($rgb){
-    if(is_array($rgb)){ 
+    if(is_array($rgb)){
       $this->rgb = $rgb;
       return $this;
     }elseif($this->hex_to_rgb($rgb)){
@@ -135,7 +135,7 @@ class canvas{
 
   private function hex_to_rgb($hex_color){
     $hex_color = str_replace( "#", "", $hex_color );
-    if(strlen($hex_color) == 3) // #fff, #000 etc. 
+    if(strlen($hex_color) == 3) // #fff, #000 etc.
       $hex_color .= $hex_color;
     if(strlen($hex_color) != 6)
       return false;
@@ -162,18 +162,18 @@ class canvas{
 
     $this->new_width = $new_width;
     $this->new_height = $new_height;
-    
+
     $this->calculate_new_dimensions();
-    
+
     if($method) $method = "resize_with_{$method}";
-    
+
     if(!method_exists($this, $method))
       $method = "resize_with_no_method";
-    
+
     $this->$method()->update_dimensions();
     return $this;
   }
-  
+
   private function calculate_new_dimensions(){
     $this->check_for_percentages();
     if(!$this->new_width)
@@ -181,24 +181,24 @@ class canvas{
     elseif(!$this->new_height)
       $this->new_height = $this->height/($this->width/$this->new_width);
   }
-  
+
   private function check_for_percentages(){
     if(strpos($this->new_width, "%"))
-      $this->new_width = round($this->width*(preg_replace("/[^0-9]/", "", $this->new_width)/100)); 
+      $this->new_width = round($this->width*(preg_replace("/[^0-9]/", "", $this->new_width)/100));
     if(strpos($this->new_height, "%"))
       $this->new_height = round($this->height*(preg_replace("/[^0-9]/", "", $this->new_height)/100));
   }
 
   private function resize_with_no_method(){
     $this->temp_image = imagecreatetruecolor($this->new_width, $this->new_height);
-    imagecopyresampled($this->temp_image, $this->image, 0, 0, 0, 0, 
+    imagecopyresampled($this->temp_image, $this->image, 0, 0, 0, 0,
                        $this->new_width, $this->new_height, $this->width, $this->height);
     $this->image = $this->temp_image;
     return $this;
   }
 
   private function fill(){
-    imagefill($this->temp_image, 0, 0, 
+    imagefill($this->temp_image, 0, 0,
               imagecolorallocate($this->temp_image, $this->rgb[0], $this->rgb[1], $this->rgb[2]));
   }
 
@@ -220,7 +220,7 @@ class canvas{
         $dif_x = round(($this->new_width-$dif_w)/2);
         $dif_y = 0;
     }
-    
+
     imagecopyresampled($this->temp_image, $this->image, $dif_x, $dif_y, 0, 0, $dif_w, $dif_h, $this->width, $this->height);
     $this->image = $this->temp_image;
     return $this;
@@ -229,13 +229,13 @@ class canvas{
   private function resize_with_crop(){
     if(!is_array($this->crop_coordinates))
       $this->crop_coordinates = array(0, 0, $this->width, $this->height);
-      
+
     $this->temp_image = imagecreatetruecolor($this->new_width, $this->new_height);
 
     $this->fill();
 
-    imagecopyresampled($this->temp_image, $this->image, $this->crop_coordinates[0], 
-                       $this->crop_coordinates[1], 0, 0, $this->crop_coordinates[2], 
+    imagecopyresampled($this->temp_image, $this->image, $this->crop_coordinates[0],
+                       $this->crop_coordinates[1], 0, 0, $this->crop_coordinates[2],
                        $this->crop_coordinates[3], $this->width, $this->height);
 
     $this->image = $this->temp_image;
@@ -256,12 +256,12 @@ class canvas{
     $this->image = $this->temp_image;
     return $this;
   }
-  
+
   private function flip_horizontal($w, $h){
     for($x = 0; $x < $w; $x++)
       imagecopy($this->temp_image, $this->image, $x, 0, $w - $x - 1, 0, 1, $h);
   }
-  
+
   private function flip_vertical($w, $h){
     for($y = 0; $y < $h; $y++)
       imagecopy($this->temp_image, $this->image, 0, $y, 0, ($h - $y - 1), $w, 1);
@@ -269,7 +269,7 @@ class canvas{
 
   function rotate($degrees){
     $background_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
-    
+
     $this->image = imagerotate($this->image, $degrees, $background_color);
 
     imagealphablending($this->image, true);
@@ -277,7 +277,7 @@ class canvas{
 
     $this->update_dimensions();
 
-    return $this; 
+    return $this;
   }
 
   function text($text, $options = array()){
@@ -285,11 +285,11 @@ class canvas{
 
     if(!isset($options["size"]))
       $options["size"] = 5;
-    
+
     if(isset($options["color"]))
       $this->set_rgb($options["color"]);
-      
-    $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]); 
+
+    $text_color = imagecolorallocate($this->image, $this->rgb[0], $this->rgb[1], $this->rgb[2]);
     $dimensions = $this->text_dimensions($text, $options);
 
     $options["x"] = isset($options["x"]) ? $options["x"] : 0;
@@ -297,7 +297,7 @@ class canvas{
 
     if(is_string($options["x"]) && is_string($options["y"]))
       list($options["x"], $options["y"]) = $this->calculate_position($options["x"], $options["y"], $dimensions["width"], $dimensions["height"]);
-      
+
     if(isset($options["background_color"]) && $options["background_color"])
       $this->text_background_color($dimensions, $options);
 
@@ -308,16 +308,16 @@ class canvas{
 
     return $this;
   }
-  
+
   private function text_dimensions($text, $options){
     if(isset($options["truetype"]) && $options["truetype"]){
       $text_dimensions = imagettfbbox($options["size"], 0, $options["font"], $text);
       return array($text_dimensions[4], $options["size"]);
     }else{
-      if($options["size"] > 5) 
+      if($options["size"] > 5)
         $options["size"] = 5;
       return array(
-          "width" => imagefontwidth($options["size"])*strlen($text), 
+          "width" => imagefontwidth($options["size"])*strlen($text),
           "height" => imagefontheight($options["size"])
       );
     }
@@ -360,7 +360,7 @@ class canvas{
 
     return array($x, $y);
   }
-  
+
   private function text_background_color($dimensions, $options){
     $this->set_rgb($options["background_color"]);
 
@@ -399,10 +399,10 @@ class canvas{
       imagecopymerge($this->image, $image_to_merge, $x, $y, 0, 0, $w, $h, $alpha);
     else
       imagecopy($this->image, $image_to_merge, $x, $y, 0, 0, $w, $h);
-    
+
     return $this;
   }
-  
+
   function filter($filter, $ammount = 1, $args = array()){
     if(!function_exists("imagefilter"))
       return false;
@@ -479,12 +479,12 @@ class canvas{
     }
     return $this;
   }
-  
-  public function round($radius = 10, $colour = "FFFFFF") {     
-    /* http://911-need-code-help.blogspot.com/2009/05/generate-images-with-round-corners-on.html 
+
+  public function round($radius = 10, $colour = "FFFFFF") {
+    /* http://911-need-code-help.blogspot.com/2009/05/generate-images-with-round-corners-on.html
     * radius: corner radius in pixels -- default value is 10
     * colour: corner colour in rgb hex format -- default value is FFFFFF  */
-  
+
     /* create mask for top-left corner in memory */
     $corner_image = imagecreatetruecolor($radius, $radius);
     $clear_colour = imagecolorallocate($corner_image, 0, 0, 0);
@@ -492,7 +492,7 @@ class canvas{
     imagecolortransparent($corner_image, $clear_colour);
     imagefill($corner_image, 0, 0, $solid_colour);
     imagefilledellipse($corner_image, $radius, $radius, $radius * 2, $radius * 2, $clear_colour);
-  
+
     /* render the top-left, bottom-left, bottom-right, top-right corners by rotating and copying the mask */
     $this->img_temp = $this->img;
     imagecopymerge($this->img_temp, $corner_image, 0, 0, 0, 0, $radius, $radius, 100);
@@ -502,11 +502,11 @@ class canvas{
     imagecopymerge($this->img_temp, $corner_image, $this->largura - $radius, $this->altura - $radius, 0, 0, $radius, $radius, 100);
     $corner_image = imagerotate($corner_image, 90, 0);
     imagecopymerge($this->img_temp, $corner_image, $this->largura - $radius, 0, 0, 0, $radius, $radius, 100);
-  
+
     /* output the image -- revise this step according to your needs */
     $this->img = $this->img_temp;
     return $this;
-  }  
+  }
 
   function set_quality($quality){
     $this->quality = $quality;
@@ -518,14 +518,14 @@ class canvas{
       $this->error = "Invalid destination directory.";
       return false;
     }else{
-      return $this->output_image($destination);  
+      return $this->output_image($destination);
     }
   }
-  
+
   function show(){
     if(headers_sent()){
       $this->error = "Headers already sent.";
-      return false;    
+      return false;
     }else{
       header("Content-type: image/{$this->extension}");
       $this->output_image();
@@ -533,7 +533,7 @@ class canvas{
       exit;
     }
   }
-  
+
   private function output_image($destination = null){
     $pathinfo = pathinfo($destination);
     $extension = ($pathinfo["extension"] ? strtolower($pathinfo["extension"]) : $this->extension);
