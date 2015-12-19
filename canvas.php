@@ -79,10 +79,26 @@ class canvas{
 
   private function file_info(){
     $pathinfo = pathinfo($this->file);
-    $this->extension = strtolower($pathinfo["extension"]);
+    $this->mime_type();
     $this->basename = $pathinfo["basename"];
     $this->dirname = $pathinfo["dirname"];
     $this->format = (isset($this->image_formats[$this->extension]) ? $this->image_formats[$this->extension] : null);
+  }
+
+  private function mime_type(){
+    $size = getimagesize($this->file);
+    $mime_type = $size['mime'];
+    
+    $mime_types = array(
+      'image/jpeg' => 'jpg',
+      'image/png' => 'png',
+      'image/gif' => 'gif',
+      'image/bmp' => 'bmp',
+    );
+    if(isset($mime_types[$mime_type]))
+      $this->extension = $mime_types[$mime_type];
+    else
+       $this->error = "Invalid mime type.";
   }
 
   private function is_image(){
